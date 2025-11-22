@@ -1,0 +1,36 @@
+1. using IMD2020 dataset and finetuning in first period, claim:
+Phase 2:
+-   TRAIN: [IMD]
+    VALID: [IMD]
+    NUM_CLASSES: 2
+    CLASS_WEIGHTS: [0.5, 2.5] -> weight is good
+- focal loss is better
+- learning rate 0.01
+-> result of best in phase 2:
+(Valid) Loss: 0.024, Best_avg_p-F1_smooth:  0.4606
+[0.86450011 0.12655321]
+confusion_matrix:
+[[29357949.   629397.]
+ [ 3972105.   666709.]]
+
+Phase 3:
+  TRAIN: [IMD]
+  VALID: [IMD]
+  NUM_CLASSES: 2
+  CLASS_WEIGHTS: [0.5, 2.5]
+
+LOSSES:
+- ["LOC", 1.0, "dice_entropy"]
+- ["CONF", 0.5, "mse"]
+- ["DET", 1.0, "cross_entropy"]
+
+learning rate 0.001
+-> phase 3 is perfect now:
+ (Valid) Loss: 1.264, Best_avg_det_bacc:  0.7606
+[0.59250107 0.16817423]
+confusion_matrix:
+[[18518986. 10789284.]
+ [ 1947346.  2575026.]]
+
+
+ 2. update lr, weights for phase 2:

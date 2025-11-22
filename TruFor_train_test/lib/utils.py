@@ -105,6 +105,9 @@ def get_criterion(config):
             elif criterion == 'dice_entropy':
                 from lib.core.criterion import DiceEntropyLoss
                 criterion_loc = DiceEntropyLoss(ignore_label=ignore_label, weight=weight, smooth=smooth).cuda()
+            elif criterion == 'focal':
+                from lib.core.criterion import FocalLoss
+                criterion_loc = FocalLoss(ignore_label=ignore_label).cuda()
             else:
                 raise ValueError('Localization loss not implemented')
 
@@ -126,54 +129,6 @@ def get_criterion(config):
                     raise ValueError('Detection loss not implemented')
 
     return criterion_loc, criterion_conf, criterion_det
-# def get_criterion(config):
-#     ignore_label = config.TRAIN.IGNORE_LABEL
-#     smooth       = config.LOSS.SMOOTH
-#     weight       = torch.FloatTensor(config.DATASET.CLASS_WEIGHTS).to(device)
-
-#     losses         = config.LOSS.LOSSES
-#     detection      = config.MODEL.EXTRA.DETECTION
-
-#     criterion_loc, criterion_conf, criterion_det = None, None, None
-
-#     for (l, _, criterion) in losses:
-#         assert l in ['LOC', 'CONF', 'DET']
-
-#         # Localization loss
-#         if l == 'LOC':
-#             if criterion == 'dice':
-#                 from lib.core.criterion import DiceLoss
-#                 criterion_loc = DiceLoss(ignore_label=ignore_label, smooth=smooth).to(device)
-#             elif criterion == 'binary_dice':
-#                 from lib.core.criterion import BinaryDiceLoss
-#                 criterion_loc = BinaryDiceLoss(ignore_label=ignore_label, smooth=smooth).to(device)
-#             elif criterion == 'cross_entropy':
-#                 from lib.core.criterion import CrossEntropy
-#                 criterion_loc = CrossEntropy(ignore_label=ignore_label, weight=weight).to(device)
-#             elif criterion == 'dice_entropy':
-#                 from lib.core.criterion import DiceEntropyLoss
-#                 criterion_loc = DiceEntropyLoss(ignore_label=ignore_label, weight=weight, smooth=smooth).to(device)
-#             else:
-#                 raise ValueError('Localization loss not implemented')
-
-#         # Confidence loss
-#         elif l == 'CONF':
-#             if criterion == 'mse':
-#                 from lib.core.criterion_conf import MSE
-#                 criterion_conf = MSE().to(device)
-#             else:
-#                 raise ValueError('Confidence loss not implemented')
-
-#         # Detection loss
-#         elif l == 'DET':
-#             if detection is not None and not detection.lower() == 'none':
-#                 if criterion == 'cross_entropy':
-#                     from lib.core.criterion_det import CrossEntropy
-#                     criterion_det = CrossEntropy().to(device)
-#                 else:
-#                     raise ValueError('Detection loss not implemented')
-
-#     return criterion_loc, criterion_conf, criterion_det
 
 
 
@@ -276,7 +231,7 @@ def get_confusion_matrix(label, pred, size, num_class, ignore=-1):
     output = pred.cpu().numpy().transpose(0, 2, 3, 1)
     seg_pred = np.asarray(np.argmax(output, axis=3), dtype=np.uint8)
     seg_gt = np.asarray(
-    label.cpu().numpy()[:, :size[-2], :size[-1]], dtype=np.int)
+    label.cpu().numpy()[:, :size[-2], :size[-1]], dtype=int)
 
     ignore_index = seg_gt != ignore
     seg_gt = seg_gt[ignore_index]
@@ -308,7 +263,7 @@ def get_confusion_matrix_1ch(label, confid, size, num_class, ignore=-1):
     # confid is without the sigmoid, so have to do >0
     seg_pred = np.asarray(output>0, dtype=np.uint8)
     seg_gt = np.asarray(
-        label.cpu().numpy()[:, :size[-2], :size[-1]], dtype=np.int)
+        label.cpu().numpy()[:, :size[-2], :size[-1]], dtype=int)
 
     ignore_index = seg_gt != ignore
     seg_gt = seg_gt[ignore_index]

@@ -5,44 +5,46 @@ CUDNN:
 WORKERS: 1
 
 DATASET:
-  TRAIN: [IMD, FR, CA, COCO, RAISE]
-  VALID: [IMD, FR, CA, COCO, RAISE]
+  # TRAIN: [IMD, FR, CA, COCO, RAISE]
+  # VALID: [IMD, FR, CA, COCO, RAISE]
+  TRAIN: [IMD]
+  VALID: [IMD]
   NUM_CLASSES: 2
-  CLASS_WEIGHTS: [0.5, 2.5]
+  CLASS_WEIGHTS: [0.3, 3.0]
 MODEL:
   NAME: detconfcmx
-  PRETRAINED: 'pretrained_models/segformers/mit_b2.pth'
+  PRETRAINED: "pretrained_models/segformers/mit_b2.pth"
   MODS: ('RGB','NP++')
   EXTRA:
-      BACKBONE: mit_b2
-      DECODER: MLPDecoder
-      DECODER_EMBED_DIM: 512
-      PREPRC: 'imagenet'
-      BN_EPS: 0.001
-      BN_MOMENTUM: 0.1
-      NP_WEIGHTS: 'pretrained_models/noiseprint++/noiseprint++.th'
-      MODULES: ['NP++','backbone','loc_head']
-      FIX_MODULES: ['NP++']
+    BACKBONE: mit_b2
+    DECODER: MLPDecoder
+    DECODER_EMBED_DIM: 512
+    PREPRC: "imagenet"
+    BN_EPS: 0.001
+    BN_MOMENTUM: 0.1
+    NP_WEIGHTS: "pretrained_models/noiseprint++/noiseprint++.th"
+    MODULES: ["NP++", "backbone", "loc_head"]
+    FIX_MODULES: ["NP++"]
 LOSS:
   LOSSES:
-    - [ 'LOC', 1.0, 'dice_entropy' ]
-  SMOOTH: 0
+    - ["LOC", 1.0, "focal"]
+  SMOOTH: 1
 TRAIN:
   PRETRAINING:
-  IMAGE_SIZE: [512,512]
+  IMAGE_SIZE: [512, 512]
   BATCH_SIZE_PER_GPU: 1
   SHUFFLE: true
-  BEGIN_EPOCH: 0
-  END_EPOCH: 5
+  BEGIN_EPOCH: 25
+  END_EPOCH: 36
   OPTIMIZER: sgd
-  LR: 0.005
+  LR: 0.001
   WD: 0.0005
   MOMENTUM: 0.9
   NESTEROV: false
   IGNORE_LABEL: -1
-  AUG: 'lib/config/aug_res_comp.yaml'
+  AUG: "lib/config/aug_res_comp.yaml"
 VALID:
   FIRST_VALID: false
-  MAX_SIZE: 1024
-  BEST_KEY: 'avg_p-F1_smooth'
-  AUG: 'lib/config/aug_res_comp.yaml'
+  MAX_SIZE: 512
+  BEST_KEY: "avg_p-F1_smooth"
+  AUG: "lib/config/aug_res_comp.yaml"
